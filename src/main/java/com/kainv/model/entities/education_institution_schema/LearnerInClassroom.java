@@ -1,6 +1,5 @@
 package com.kainv.model.entities.education_institution_schema;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.kainv.model.entities.personal_cabinet_schema.User.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

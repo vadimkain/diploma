@@ -24,15 +24,4 @@ public class Privilege {
     private String name;
 
     private String description;
-
-    public Privilege(String name, String description) {
-        this.name = name;
-        this.description = description;
-    }
-
-    //    @ManyToMany(mappedBy = "privileges")
-//    @JsonIgnore
-//    private Set<Role> roles = new HashSet<>();
-
-    // getters and setters
 }

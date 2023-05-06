@@ -7,8 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -48,8 +47,6 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
 //    @JsonIgnoreProperties("users")
-    private Set<Role> roles = new HashSet<>();
-
-    // getters and setters
+    private List<Role> roles;
 }
 

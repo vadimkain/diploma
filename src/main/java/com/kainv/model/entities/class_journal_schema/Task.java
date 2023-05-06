@@ -1,6 +1,6 @@
 package com.kainv.model.entities.class_journal_schema;
 
-import com.kainv.model.entities.education_institution_schema.TeacherInClassroom;
+import com.kainv.model.entities.education_institution_schema.TeacherWorkload;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -8,15 +8,14 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "homeworks", schema = "class_journal_schema")
-public class Homework {
+@Table(name = "tasks", schema = "class_journal_schema")
+public class Task {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,8 +23,8 @@ public class Homework {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "teacher_in_classroom_id", nullable = false)
-    private TeacherInClassroom teacherInClassroom;
+    @JoinColumn(name = "teacher_workload_id", nullable = false)
+    private TeacherWorkload teacherWorkload;
 
     @Column(name = "begin_hw")
     private LocalDateTime beginHw;
@@ -39,8 +38,6 @@ public class Homework {
     @Column(name = "description", length = 400)
     private String description;
 
-    @Column(name = "file", length = Integer.MAX_VALUE)
+    @Column(name = "file_link", length = Integer.MAX_VALUE)
     private String file;
-
-    // getters and setters
 }

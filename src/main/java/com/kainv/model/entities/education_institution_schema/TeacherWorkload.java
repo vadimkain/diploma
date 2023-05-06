@@ -1,44 +1,38 @@
 package com.kainv.model.entities.education_institution_schema;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.kainv.model.entities.personal_cabinet_schema.User.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import java.time.DayOfWeek;
-import java.time.LocalTime;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "schedules", schema = "educational_institution_schema")
-public class Schedule {
+@Table(name = "teacher_workloads", schema = "educational_institution_schema")
+public class TeacherWorkload {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "teacher_in_classroom_id")
+    @JoinColumn(name = "teacher_id", nullable = false)
     @JsonIgnoreProperties(value = {"subject"})
-    private TeacherInClassroom teacherInClassroom;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "day_of_week")
-    private MyDayOfWeek dayOfWeek;
+    private User teacher;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "subject_id")
+    @JoinColumn(name = "classroom_id", nullable = false)
+//    @JsonBackReference
+    private Classroom classroom;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "subject_id", nullable = false)
     private Subject subject;
-
-    @Column(name = "start_time")
-    private LocalTime startTime;
-
-    @Column(name = "end_time")
-    private LocalTime endTime;
 }
 
