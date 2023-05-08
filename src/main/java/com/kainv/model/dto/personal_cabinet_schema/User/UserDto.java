@@ -16,6 +16,6 @@ public class UserDto {
     String patronymic;
     Birthday birthDate;
     String email;
-    String password;
+    //    String password;
     List<RoleDto> roles;
 }
