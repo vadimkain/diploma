@@ -16,6 +16,7 @@ public class JwtConfigurer extends SecurityConfigurerAdapter<DefaultSecurityFilt
      * Сконфигурировали <code>HttpSecurity</code>  таким образом, что каждый запрос перед тем как быть дальше переданным
      * серверу - он должен пройти через проверку <i>JwtTokenFilter</i>. <i>JwtTokenFilter</i> анализирует наш запрос,
      * смотрит что у него есть токен и токен валидный и т.д.. Если токен валидный, то все хорошо и работаем дальше.
+     *
      * @param httpSecurity
      * @throws Exception
      */
