@@ -9,7 +9,7 @@ import java.util.List;
 
 @Value
 @Builder
-public class UserDto {
+public class DefaultUserDto {
     Long id;
     String surname;
     String firstName;

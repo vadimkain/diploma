@@ -1,6 +1,6 @@
 package com.kainv.model.services.mapper.personal_cabinet_schema;
 
-import com.kainv.model.dto.personal_cabinet_schema.User.UserDto;
+import com.kainv.model.dto.personal_cabinet_schema.User.DefaultUserDto;
 import com.kainv.model.entities.personal_cabinet_schema.User.User;
 import org.mapstruct.Mapper;
 import org.springframework.stereotype.Component;
@@ -11,13 +11,13 @@ import java.util.List;
 @Mapper(componentModel = "spring", uses = {RoleMapper.class})
 public interface UserMapper {
 
-    UserDto toDto(User user);
+    DefaultUserDto toDto(User user);
 
-    List<UserDto> toDtoList(List<User> userList);
+    List<DefaultUserDto> toDtoList(List<User> userList);
 
-    User toEntity(UserDto userDto);
+    User toEntity(DefaultUserDto defaultUserDto);
 
-    List<User> toEntityList(List<UserDto> userDtoList);
+    List<User> toEntityList(List<DefaultUserDto> defaultUserDtoList);
 }
 
 

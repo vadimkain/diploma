@@ -1,6 +1,6 @@
 package com.kainv.model.dto.education_institution_schema;
 
-import com.kainv.model.dto.personal_cabinet_schema.User.RegistrationUserDto;
+import com.kainv.model.dto.personal_cabinet_schema.User.DefaultUserDto;
 import lombok.Builder;
 import lombok.Value;
 
@@ -9,5 +9,5 @@ import lombok.Value;
 public class CreateSchoolDto {
     private String name;
     private String description;
-    private RegistrationUserDto director;
+    private DefaultUserDto defaultUserDto;
 }
