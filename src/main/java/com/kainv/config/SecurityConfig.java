@@ -1,43 +1,52 @@
 package com.kainv.config;
 
-import com.kainv.security.jwt.JwtConfigurer;
-import com.kainv.security.jwt.JwtTokenProvider;
+import com.kainv.security.jwt.JwtRequestFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import static com.kainv.util.RequestMappingPathV1.*;
 
 @Configuration
-public class SecurityConfig extends WebSecurityConfigurerAdapter {
+@EnableWebSecurity
+public class SecurityConfig {
     @Autowired
-    JwtTokenProvider jwtTokenProvider;
-
-    private static final String LOGIN_ENDPOINT = "/api/v1/auth/login";
-    private static final String DIRECTOR_ENDPOINT = "api/v1/school/**";
+    private JwtRequestFilter jwtRequestFilter;
 
     @Bean
-    @Override
-    public AuthenticationManager authenticationManager() throws Exception {
-        return super.authenticationManagerBean();
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder(12);
     }
 
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        http
-                .httpBasic().disable()
-                .csrf().disable()
-//                Не создаём сессию на каждого пользователя
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()
-//                Определяем права доступа к ресурсам
+    @Bean
+    public AuthenticationManager authenticationManager(final AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
+    }
+
+    @Bean
+    public SecurityFilterChain configure(final HttpSecurity httpSecurity) throws Exception {
+        return httpSecurity
+                .cors().and().csrf().disable()
                 .authorizeHttpRequests()
-                    .antMatchers(LOGIN_ENDPOINT).permitAll()
-                    .antMatchers(DIRECTOR_ENDPOINT).hasRole("DIRECTOR")
+                .requestMatchers(
+                        HELLO,
+                        AUTHENTICATE,
+                        REGISTRATION + "/director"
+                ).permitAll()
                 .anyRequest().authenticated()
                 .and()
-                .apply(new JwtConfigurer(jwtTokenProvider));
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and()
+                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
+                .build();
     }
 }
