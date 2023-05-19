@@ -7,7 +7,6 @@ import com.kainv.model.mapper.personal_cabinet.AddUserMapper;
 import com.kainv.model.mapper.personal_cabinet.RoleMapper;
 import com.kainv.model.mapper.personal_cabinet.UserMapper;
 import com.kainv.model.repos.UserRepository;
-import com.kainv.model.service.IComponentService;
 import com.kainv.model.service.ICrudService;
 import com.kainv.model.service.IMediatorService;
 import lombok.extern.slf4j.Slf4j;
@@ -18,14 +17,14 @@ import java.util.Optional;
 
 @Slf4j
 @Service
-public class UserServiceImpl implements ICrudService<UserDto, AddUserDto>, IUserService<UserDto>, IComponentService {
-    private UserRepository userRepository;
+public class UserServiceImpl implements ICrudService<UserDto, AddUserDto>, IUserService<UserDto> {
+    private final UserRepository userRepository;
 
-    private UserMapper userMapper;
+    private final UserMapper userMapper;
 
-    private AddUserMapper addUserMapper;
+    private final AddUserMapper addUserMapper;
 
-    private RoleMapper roleMapper;
+    private final RoleMapper roleMapper;
 
     private IMediatorService iMediatorService;
 
@@ -99,15 +98,5 @@ public class UserServiceImpl implements ICrudService<UserDto, AddUserDto>, IUser
         Optional<User> userByEmail = Optional.ofNullable(userRepository.findByEmail(email));
 
         return userByEmail.map(userMapper::toDto);
-    }
-
-    @Override
-    public void setMediator(IMediatorService mediator) {
-        this.iMediatorService = mediator;
-    }
-
-    @Override
-    public String getComponentName() {
-        return "UserServiceImpl";
     }
 }

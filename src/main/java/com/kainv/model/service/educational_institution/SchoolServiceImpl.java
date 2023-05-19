@@ -6,7 +6,6 @@ import com.kainv.model.entity.education_institution_domain.School;
 import com.kainv.model.mapper.educational_institution.AddSchoolMapper;
 import com.kainv.model.mapper.educational_institution.SchoolMapper;
 import com.kainv.model.repos.SchoolRepository;
-import com.kainv.model.service.IComponentService;
 import com.kainv.model.service.ICrudService;
 import com.kainv.model.service.IMediatorService;
 import lombok.extern.slf4j.Slf4j;
@@ -17,11 +16,11 @@ import java.util.Optional;
 
 @Slf4j
 @Service
-public class SchoolServiceImpl implements ICrudService<SchoolDto, AddSchoolDto>, ISchoolService<SchoolDto>, IComponentService {
+public class SchoolServiceImpl implements ICrudService<SchoolDto, AddSchoolDto>, ISchoolService<SchoolDto> {
 
-    private SchoolRepository schoolRepository;
-    private SchoolMapper schoolMapper;
-    private AddSchoolMapper addSchoolMapper;
+    private final SchoolRepository schoolRepository;
+    private final SchoolMapper schoolMapper;
+    private final AddSchoolMapper addSchoolMapper;
     private IMediatorService iMediatorService;
 
     @Autowired
@@ -96,15 +95,5 @@ public class SchoolServiceImpl implements ICrudService<SchoolDto, AddSchoolDto>,
         log.info("school {} has not found for director {}", schoolDto.getName(), schoolDto.getDirector().getEmail());
 
         return Optional.empty();
-    }
-
-    @Override
-    public void setMediator(IMediatorService mediator) {
-        this.iMediatorService = mediator;
-    }
-
-    @Override
-    public String getComponentName() {
-        return "SchoolServiceImpl";
     }
 }

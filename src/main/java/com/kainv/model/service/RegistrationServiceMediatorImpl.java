@@ -7,36 +7,22 @@ import com.kainv.model.dto.personal_cabinet.UserDto;
 import com.kainv.model.service.educational_institution.SchoolServiceImpl;
 import com.kainv.model.service.personal_cabinet.UserServiceImpl;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
 @Slf4j
-//@Service
+@Service
 public class RegistrationServiceMediatorImpl implements IMediatorService {
 
-    private UserServiceImpl userService;
-    private SchoolServiceImpl schoolService;
+    private final UserServiceImpl userService;
+    private final SchoolServiceImpl schoolService;
 
-//    @Autowired
-//    public RegistrationServiceMediatorImpl(UserServiceImpl userService, SchoolServiceImpl schoolService) {
-//        this.userService = userService;
-//        this.schoolService = schoolService;
-//    }
-
-    @Override
-    public void registerComponent(IComponentService iComponentService) {
-        iComponentService.setMediator(this);
-
-        switch (iComponentService.getComponentName()) {
-            case "SchoolServiceImpl" -> {
-                userService = (UserServiceImpl) iComponentService;
-            }
-
-            case "UserServiceImpl" -> {
-                schoolService = (SchoolServiceImpl) iComponentService;
-            }
-
-        }
+    @Autowired
+    public RegistrationServiceMediatorImpl(UserServiceImpl userService, SchoolServiceImpl schoolService) {
+        this.userService = userService;
+        this.schoolService = schoolService;
     }
 
     @Override
@@ -60,6 +46,5 @@ public class RegistrationServiceMediatorImpl implements IMediatorService {
         }
 
         return Optional.ofNullable(directorDto);
-
     }
 }
