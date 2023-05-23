@@ -8,9 +8,9 @@ import com.kainv.model.mapper.personal_cabinet.RoleMapper;
 import com.kainv.model.mapper.personal_cabinet.UserMapper;
 import com.kainv.model.repos.UserRepository;
 import com.kainv.model.service.ICrudService;
-import com.kainv.model.service.IMediatorService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -26,14 +26,15 @@ public class UserServiceImpl implements ICrudService<UserDto, AddUserDto>, IUser
 
     private final RoleMapper roleMapper;
 
-    private IMediatorService iMediatorService;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper, AddUserMapper addUserMapper, RoleMapper roleMapper) {
+    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper, AddUserMapper addUserMapper, RoleMapper roleMapper, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.addUserMapper = addUserMapper;
         this.roleMapper = roleMapper;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -43,6 +44,8 @@ public class UserServiceImpl implements ICrudService<UserDto, AddUserDto>, IUser
             log.info("user with email: {} already exists", addEntityDto.getEmail());
             return Optional.empty();
         }
+
+        addEntityDto.setPassword(passwordEncoder.encode(addEntityDto.getPassword()));
 
         Optional<User> userDto = Optional.of(userRepository.save(addUserMapper.toUser(addEntityDto)));
         log.info("user with email: {} does not exist and he has added to database", addEntityDto.getEmail());
@@ -57,7 +60,7 @@ public class UserServiceImpl implements ICrudService<UserDto, AddUserDto>, IUser
 
         Optional<UserDto> updatedUserDtoOptional = userById.map(user -> {
             user.setEmail(entityDto.getEmail());
-            user.setPassword(entityDto.getPassword());
+            user.setPassword(passwordEncoder.encode(entityDto.getPassword()));
             user.setSurname(entityDto.getSurname());
             user.setFirstName(entityDto.getFirstName());
             user.setPatronymic(entityDto.getPatronymic());

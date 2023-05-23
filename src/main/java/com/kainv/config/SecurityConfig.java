@@ -40,7 +40,8 @@ public class SecurityConfig {
                 .requestMatchers(
                         HELLO,
                         AUTHENTICATE,
-                        REGISTRATION + "/director"
+                        REGISTRATION,
+                        REGISTRATION + "/*"
                 ).permitAll()
                 .anyRequest().authenticated()
                 .and()

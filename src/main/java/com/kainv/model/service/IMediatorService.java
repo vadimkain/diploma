@@ -6,6 +6,5 @@ import com.kainv.model.dto.DirectorDto;
 import java.util.Optional;
 
 public interface IMediatorService {
-
     Optional<DirectorDto> addDirector(AddDirectorDto addDirectorDto);
 }

@@ -7,7 +7,6 @@ import com.kainv.model.mapper.educational_institution.AddSchoolMapper;
 import com.kainv.model.mapper.educational_institution.SchoolMapper;
 import com.kainv.model.repos.SchoolRepository;
 import com.kainv.model.service.ICrudService;
-import com.kainv.model.service.IMediatorService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,7 +20,6 @@ public class SchoolServiceImpl implements ICrudService<SchoolDto, AddSchoolDto>,
     private final SchoolRepository schoolRepository;
     private final SchoolMapper schoolMapper;
     private final AddSchoolMapper addSchoolMapper;
-    private IMediatorService iMediatorService;
 
     @Autowired
     public SchoolServiceImpl(SchoolRepository schoolRepository, SchoolMapper schoolMapper, AddSchoolMapper addSchoolMapper) {
