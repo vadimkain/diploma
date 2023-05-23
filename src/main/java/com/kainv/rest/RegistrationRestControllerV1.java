@@ -1,19 +1,17 @@
 package com.kainv.rest;
 
-import com.kainv.model.dto.AddDirectorDto;
-import com.kainv.model.dto.DirectorDto;
 import com.kainv.model.entity.personal_cabinet_domain.Role;
 import com.kainv.model.repos.RoleRepository;
-import com.kainv.model.service.RegistrationServiceMediatorImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.kainv.util.RequestMappingPathV1.REGISTRATION;
@@ -24,12 +22,10 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @RestController
 @RequestMapping(REGISTRATION)
 public class RegistrationRestControllerV1 {
-    private final RegistrationServiceMediatorImpl registrationServiceMediator;
     private final RoleRepository roleRepository;
 
     @Autowired
-    public RegistrationRestControllerV1(RegistrationServiceMediatorImpl registrationServiceMediator, RoleRepository roleRepository) {
-        this.registrationServiceMediator = registrationServiceMediator;
+    public RegistrationRestControllerV1(RoleRepository roleRepository) {
         this.roleRepository = roleRepository;
     }
 
@@ -47,20 +43,22 @@ public class RegistrationRestControllerV1 {
         return ResponseEntity.ok(collectionModel);
     }
 
-    @PostMapping("/director")
-    @ResponseBody
-    public ResponseEntity<EntityModel<?>> registrationDirector(@RequestBody AddDirectorDto addDirectorDto) {
-        Optional<DirectorDto> result = registrationServiceMediator.addDirector(addDirectorDto);
 
-        if (result.isPresent()) {
-            return ResponseEntity.ok(EntityModel.of("Director has been saved with school")
-                    .add(
-                            linkTo(methodOn(RegistrationRestControllerV1.class).registrationDirector(addDirectorDto)).withSelfRel()
-                    )
-            );
-        } else {
-            log.info("user {} has not been saved and school {} has not been saved", addDirectorDto.getAddUserDto().getEmail(), addDirectorDto.getAddSchoolDto().getName());
-            return ResponseEntity.notFound().build();
-        }
-    }
+
+//    @PostMapping("/director")
+//    @ResponseBody
+//    public ResponseEntity<EntityModel<?>> registrationDirector(@RequestBody AddDirectorDto addDirectorDto) {
+//        Optional<DirectorDto> result = registrationServiceMediator.addDirector(addDirectorDto);
+//
+//        if (result.isPresent()) {
+//            return ResponseEntity.ok(EntityModel.of("Director has been saved with school")
+//                    .add(
+//                            linkTo(methodOn(RegistrationRestControllerV1.class).registrationDirector(addDirectorDto)).withSelfRel()
+//                    )
+//            );
+//        } else {
+//            log.info("user {} has not been saved and school {} has not been saved", addDirectorDto.getAddUserDto().getEmail(), addDirectorDto.getAddSchoolDto().getName());
+//            return ResponseEntity.notFound().build();
+//        }
+//    }
 }
