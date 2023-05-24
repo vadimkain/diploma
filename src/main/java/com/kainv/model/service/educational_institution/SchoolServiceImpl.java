@@ -1,5 +1,7 @@
 package com.kainv.model.service.educational_institution;
 
+import com.kainv.exceptions.SchoolAlreadyExistsForUserException;
+import com.kainv.exceptions.SchoolForUsersNotFoundException;
 import com.kainv.model.dto.educational_institution.AddSchoolDto;
 import com.kainv.model.dto.educational_institution.SchoolDto;
 import com.kainv.model.entity.education_institution_domain.School;
@@ -7,6 +9,7 @@ import com.kainv.model.mapper.educational_institution.AddSchoolMapper;
 import com.kainv.model.mapper.educational_institution.SchoolMapper;
 import com.kainv.model.repos.SchoolRepository;
 import com.kainv.model.service.ICrudService;
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,70 +31,88 @@ public class SchoolServiceImpl implements ICrudService<SchoolDto, AddSchoolDto>,
         this.addSchoolMapper = addSchoolMapper;
     }
 
+    @Transactional
     @Override
     public Optional<SchoolDto> createEntity(AddSchoolDto addSchoolDto) {
+        try {
+            Optional<School> existingSchool = schoolRepository.findSchoolsByDirectorIdAndRole(addSchoolDto.getDirector().getId());
+            if (existingSchool.isPresent()) {
+                log.info("School {} has been found for director {}", addSchoolDto.getName(), addSchoolDto.getDirector().getEmail());
+                throw new SchoolAlreadyExistsForUserException("School for user already exists");
+            }
 
-        if (schoolRepository.findSchoolsByDirectorIdAndRole(addSchoolDto.getDirector().getId()).isPresent()) {
-            log.info("school {} has found for director {}", addSchoolDto.getName(), addSchoolDto.getDirector().getEmail());
+            School savedSchool = schoolRepository.save(addSchoolMapper.toEntity(addSchoolDto));
+            log.info("School {} has been saved", savedSchool);
+
+            return Optional.of(schoolMapper.toDto(savedSchool));
+        } catch (SchoolAlreadyExistsForUserException e) {
+            log.error("Error creating school: {}", e.getMessage());
             return Optional.empty();
         }
-
-        Optional<School> resultInsertSchool = Optional.of(schoolRepository.save(addSchoolMapper.toEntity(addSchoolDto)));
-
-        resultInsertSchool.ifPresentOrElse(school -> log.info("school: {} has saved", school), () -> log.info("school has not saved"));
-
-        return resultInsertSchool.map(schoolMapper::toDto);
     }
 
+
+    @Transactional
     @Override
     public Optional<SchoolDto> updateEntity(SchoolDto schoolDto) {
-        Optional<School> schoolById = schoolRepository.findById(schoolDto.getId());
+        try {
+            Optional<School> schoolById = schoolRepository.findById(schoolDto.getId());
 
-        Optional<SchoolDto> updatedUserDtoOptional = schoolById.map(school -> {
+            if (schoolById.isPresent()) {
+                School school = schoolById.get();
+                school.setName(schoolDto.getName());
+                school.setDescription(schoolDto.getDescription());
 
-            school.setName(schoolDto.getName());
-            school.setDescription(schoolDto.getDescription());
+                School updatedSchool = schoolRepository.save(school);
 
-            schoolRepository.save(school);
+                log.info("School with id {} and name {} has been updated", updatedSchool.getId(), updatedSchool.getName());
 
-            log.info("school with id {} and name {} has updated", school.getId(), school.getName());
-
-            return schoolMapper.toDto(school);
-        });
-
-        log.info("school with id {} and name {} does not exist", schoolDto.getId(), schoolDto.getName());
-
-        return Optional.empty();
+                return Optional.of(schoolMapper.toDto(updatedSchool));
+            } else {
+                log.info("School with id {} does not exist", schoolDto.getId());
+                throw new SchoolForUsersNotFoundException("School for user not found");
+            }
+        } catch (SchoolForUsersNotFoundException e) {
+            return Optional.empty();
+        }
     }
 
+    @Transactional
     @Override
     public boolean deleteEntity(Long id) {
-        Optional<School> schoolById = schoolRepository.findById(id);
+        try {
+            Optional<School> schoolById = schoolRepository.findById(id);
 
-        schoolById.map(school -> {
-            schoolRepository.deleteById(school.getId());
+            if (schoolById.isPresent()) {
+                School school = schoolById.get();
+                schoolRepository.deleteById(school.getId());
 
-            log.info("school with id {} and name {} has deleted", school.getId(), school.getName());
+                log.info("School with id {} and name {} has been deleted", school.getId(), school.getName());
 
-            return true;
-        });
-
-        log.info("school with id {} has not deleted because he has not found", id);
-        return false;
+                return true;
+            } else {
+                log.info("School with id {} has not been deleted because it was not found", id);
+                throw new SchoolForUsersNotFoundException("School for user not found");
+            }
+        } catch (SchoolForUsersNotFoundException e) {
+            log.info("School with id {} does not exist", id);
+            return false;
+        }
     }
+
 
     @Override
     public Optional<SchoolDto> findSchoolForDirector(SchoolDto schoolDto) {
-        schoolRepository.findSchoolsByDirectorIdAndRole(schoolDto.getDirector().getId())
-                .map(
-                        school -> {
-                            log.info("school {} has found for director {}", schoolDto.getName(), schoolDto.getDirector().getEmail());
+        Optional<School> schoolOptional = schoolRepository.findSchoolsByDirectorIdAndRole(schoolDto.getDirector().getId());
 
-                            return Optional.of(schoolMapper.toDto(school));
-                        });
-
-        log.info("school {} has not found for director {}", schoolDto.getName(), schoolDto.getDirector().getEmail());
-
-        return Optional.empty();
+        if (schoolOptional.isPresent()) {
+            School school = schoolOptional.get();
+            log.info("School {} has been found for director {}", schoolDto.getName(), schoolDto.getDirector().getEmail());
+            return Optional.of(schoolMapper.toDto(school));
+        } else {
+            log.info("School {} has not been found for director {}", schoolDto.getName(), schoolDto.getDirector().getEmail());
+            return Optional.empty();
+        }
     }
+
 }

@@ -8,6 +8,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Slf4j
 @Service
 public class JwtUserDetailsService implements UserDetailsService {
@@ -20,13 +22,13 @@ public class JwtUserDetailsService implements UserDetailsService {
 
     @Override
     public JwtUserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        final User user = userRepository.findByEmail(username);
+        final Optional<User> user = userRepository.findByEmail(username);
 
-        if (user == null) {
+        if (user.isEmpty()) {
             throw new UsernameNotFoundException("User " + username + " not found");
         }
 
-        JwtUserDetails jwtUserDetails = JwtUserDetailsFactory.create(user);
+        JwtUserDetails jwtUserDetails = JwtUserDetailsFactory.create(user.get());
         log.info("IN loadUserByUsername - user with username: {} successfully loaded", username);
 
         return jwtUserDetails;

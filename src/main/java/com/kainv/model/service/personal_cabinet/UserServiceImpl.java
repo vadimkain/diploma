@@ -1,5 +1,7 @@
 package com.kainv.model.service.personal_cabinet;
 
+import com.kainv.exceptions.UserAlreadyExistsException;
+import com.kainv.exceptions.UserNotFoundException;
 import com.kainv.model.dto.personal_cabinet.AddUserDto;
 import com.kainv.model.dto.personal_cabinet.UserDto;
 import com.kainv.model.entity.personal_cabinet_domain.User;
@@ -8,6 +10,7 @@ import com.kainv.model.mapper.personal_cabinet.RoleMapper;
 import com.kainv.model.mapper.personal_cabinet.UserMapper;
 import com.kainv.model.repos.UserRepository;
 import com.kainv.model.service.ICrudService;
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -17,7 +20,7 @@ import java.util.Optional;
 
 @Slf4j
 @Service
-public class UserServiceImpl implements ICrudService<UserDto, AddUserDto>, IUserService<UserDto> {
+public class UserServiceImpl implements ICrudService<UserDto, AddUserDto> {
     private final UserRepository userRepository;
 
     private final UserMapper userMapper;
@@ -38,68 +41,80 @@ public class UserServiceImpl implements ICrudService<UserDto, AddUserDto>, IUser
     }
 
     @Override
+    @Transactional
     public Optional<UserDto> createEntity(AddUserDto addEntityDto) {
+        try {
+            if (userRepository.findByEmail(addEntityDto.getEmail()).isPresent()) {
+                log.info("User with email: {} already exists", addEntityDto.getEmail());
+                throw new UserAlreadyExistsException("User with email " + addEntityDto.getEmail() + " already exists");
+            }
 
-        if (userRepository.findByEmail(addEntityDto.getEmail()) != null) {
-            log.info("user with email: {} already exists", addEntityDto.getEmail());
+            addEntityDto.setPassword(passwordEncoder.encode(addEntityDto.getPassword()));
+
+            User user = userRepository.save(addUserMapper.toUser(addEntityDto));
+            log.info("User with email: {} does not exist and has been added to the database", addEntityDto.getEmail());
+
+            return Optional.of(user).map(userMapper::toDto);
+        } catch (UserAlreadyExistsException e) {
+            log.error("Error creating user: {}", e.getMessage());
             return Optional.empty();
         }
-
-        addEntityDto.setPassword(passwordEncoder.encode(addEntityDto.getPassword()));
-
-        Optional<User> userDto = Optional.of(userRepository.save(addUserMapper.toUser(addEntityDto)));
-        log.info("user with email: {} does not exist and he has added to database", addEntityDto.getEmail());
-
-        return userDto.map(userMapper::toDto);
     }
 
+
+    @Transactional
     @Override
     public Optional<UserDto> updateEntity(UserDto entityDto) {
+        try {
+            Optional<User> userById = userRepository.findById(entityDto.getId());
 
-        Optional<User> userById = userRepository.findById(entityDto.getId());
+            if (userById.isPresent()) {
+                User user = userById.get();
+                user.setEmail(entityDto.getEmail());
+                user.setPassword(passwordEncoder.encode(entityDto.getPassword()));
+                user.setSurname(entityDto.getSurname());
+                user.setFirstName(entityDto.getFirstName());
+                user.setPatronymic(entityDto.getPatronymic());
+                user.setBirthDate(entityDto.getBirthDate());
+                user.setRoles(roleMapper.toEntityList(entityDto.getRoles()));
 
-        Optional<UserDto> updatedUserDtoOptional = userById.map(user -> {
-            user.setEmail(entityDto.getEmail());
-            user.setPassword(passwordEncoder.encode(entityDto.getPassword()));
-            user.setSurname(entityDto.getSurname());
-            user.setFirstName(entityDto.getFirstName());
-            user.setPatronymic(entityDto.getPatronymic());
-            user.setBirthDate(entityDto.getBirthDate());
-            user.setRoles(roleMapper.toEntityList(entityDto.getRoles()));
+                userRepository.save(user);
 
-            userRepository.save(user);
+                log.info("User with id {} and email {} has been updated", entityDto.getId(), entityDto.getEmail());
 
-            log.info("user user with id {} and email {} has updated", entityDto.getId(), entityDto.getEmail());
-
-            return userMapper.toDto(user);
-        });
-
-        log.info("user with id {} and email {} does not exist", entityDto.getId(), entityDto.getEmail());
-
-        return Optional.empty();
+                return Optional.of(userMapper.toDto(user));
+            } else {
+                log.info("User with id {} does not exist", entityDto.getId());
+                throw new UserNotFoundException("User not found");
+            }
+        } catch (UserNotFoundException e) {
+            log.error("Error update user: {}", e.getMessage());
+            return Optional.empty();
+        }
     }
 
+
+    @Transactional
     @Override
     public boolean deleteEntity(Long id) {
-        Optional<User> userById = userRepository.findById(id);
+        try {
+            Optional<User> userById = userRepository.findById(id);
 
-        userById.map(user -> {
-            userRepository.deleteById(user.getId());
+            if (userById.isPresent()) {
+                User user = userById.get();
+                userRepository.deleteById(user.getId());
 
-            log.info("user with id {} and email {} has deleted", user.getId(), user.getEmail());
+                log.info("User with id {} and email {} has been deleted", user.getId(), user.getEmail());
 
-            return true;
-        });
-
-        log.info("user with id {} has not deleted because he has not found", id);
-
-        return false;
+                return true;
+            } else {
+                log.info("User with id {} has not been deleted because it was not found", id);
+                throw new UserNotFoundException("User not found");
+            }
+        } catch (UserNotFoundException e) {
+            log.error("Error delete user: {}", e.getMessage());
+            return false;
+        }
     }
 
-    @Override
-    public Optional<UserDto> getUserByEmail(String email) {
-        Optional<User> userByEmail = Optional.ofNullable(userRepository.findByEmail(email));
-
-        return userByEmail.map(userMapper::toDto);
-    }
 }
