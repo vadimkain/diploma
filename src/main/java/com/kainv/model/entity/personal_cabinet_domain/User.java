@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
+import static jakarta.persistence.CascadeType.REMOVE;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -38,7 +40,7 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    @ManyToMany
+    @ManyToMany(cascade = REMOVE)
     @JoinTable(
             name = "users_and_roles",
             schema = "personal_cabinet_schema",
