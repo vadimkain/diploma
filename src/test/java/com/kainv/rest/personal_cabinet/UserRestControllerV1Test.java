@@ -136,7 +136,6 @@ class UserRestControllerV1Test {
     }
 
 
-
     @Test
     void updateUser_WithInvalidPrincipal_ReturnsUnauthorized() {
         UserDto userDto = UserDto.builder()
