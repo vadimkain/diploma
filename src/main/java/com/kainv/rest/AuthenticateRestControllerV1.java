@@ -30,6 +30,11 @@ public class AuthenticateRestControllerV1 {
 
     @PostMapping
     public ResponseEntity<EntityModel<AuthenticationResponse>> getToken(@RequestBody final AuthenticationRequest authenticationRequest) {
+
+        if (authenticationRequest == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
         return ResponseEntity.ok(
                 EntityModel.of(
                         jwtTokenProvider.provideToken(authenticationRequest.getEmail(), authenticationRequest.getPassword())

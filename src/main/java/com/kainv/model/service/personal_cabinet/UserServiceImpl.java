@@ -4,6 +4,7 @@ import com.kainv.exceptions.UserAlreadyExistsException;
 import com.kainv.exceptions.UserNotFoundException;
 import com.kainv.model.dto.personal_cabinet.AddUserDto;
 import com.kainv.model.dto.personal_cabinet.UserDto;
+import com.kainv.model.dto.personal_cabinet.UserInfoDto;
 import com.kainv.model.entity.personal_cabinet_domain.User;
 import com.kainv.model.mapper.personal_cabinet.AddUserMapper;
 import com.kainv.model.mapper.personal_cabinet.RoleMapper;
@@ -40,6 +41,22 @@ public class UserServiceImpl implements ICrudService<UserDto, AddUserDto> {
         this.passwordEncoder = passwordEncoder;
     }
 
+    public Optional<UserInfoDto> getAuthorizedUserProfileByEmail(String email) {
+        Optional<User> user = userRepository.findByEmail(email);
+
+        return user.map(usr -> UserInfoDto.builder()
+                .id(usr.getId())
+                .surname(usr.getSurname())
+                .firstName(usr.getFirstName())
+                .patronymic(usr.getPatronymic())
+                .email(usr.getEmail())
+                .birthDate(usr.getBirthDate().getBirthDate().toString())
+                .roles(roleMapper.toDtoList(usr.getRoles()))
+                .build()
+        );
+    }
+
+
     @Override
     @Transactional
     public Optional<UserDto> createEntity(AddUserDto addEntityDto) {
@@ -70,17 +87,43 @@ public class UserServiceImpl implements ICrudService<UserDto, AddUserDto> {
 
             if (userById.isPresent()) {
                 User user = userById.get();
-                user.setEmail(entityDto.getEmail());
-                user.setPassword(passwordEncoder.encode(entityDto.getPassword()));
-                user.setSurname(entityDto.getSurname());
-                user.setFirstName(entityDto.getFirstName());
-                user.setPatronymic(entityDto.getPatronymic());
-                user.setBirthDate(entityDto.getBirthDate());
-                user.setRoles(roleMapper.toEntityList(entityDto.getRoles()));
+                boolean isModified = false;
 
-                userRepository.save(user);
+                if (!user.getEmail().equals(entityDto.getEmail())) {
+                    user.setEmail(entityDto.getEmail());
+                    isModified = true;
+                }
+                if (!entityDto.getPassword().isEmpty()) {
+                    user.setPassword(passwordEncoder.encode(entityDto.getPassword()));
+                    isModified = true;
+                }
+                if (!user.getSurname().equals(entityDto.getSurname())) {
+                    user.setSurname(entityDto.getSurname());
+                    isModified = true;
+                }
+                if (!user.getFirstName().equals(entityDto.getFirstName())) {
+                    user.setFirstName(entityDto.getFirstName());
+                    isModified = true;
+                }
+                if (!user.getPatronymic().equals(entityDto.getPatronymic())) {
+                    user.setPatronymic(entityDto.getPatronymic());
+                    isModified = true;
+                }
+                if (user.getBirthDate() == null || !user.getBirthDate().equals(entityDto.getBirthDate())) {
+                    user.setBirthDate(entityDto.getBirthDate());
+                    isModified = true;
+                }
+                if (!user.getRoles().equals(roleMapper.toEntityList(entityDto.getRoles()))) {
+                    user.setRoles(roleMapper.toEntityList(entityDto.getRoles()));
+                    isModified = true;
+                }
 
-                log.info("User with id {} and email {} has been updated", entityDto.getId(), entityDto.getEmail());
+                if (isModified) {
+                    userRepository.save(user);
+                    log.info("User with id {} and email {} has been updated", entityDto.getId(), entityDto.getEmail());
+                } else {
+                    log.info("No changes detected for user with id {}", entityDto.getId());
+                }
 
                 return Optional.of(userMapper.toDto(user));
             } else {
@@ -88,7 +131,7 @@ public class UserServiceImpl implements ICrudService<UserDto, AddUserDto> {
                 throw new UserNotFoundException("User not found");
             }
         } catch (UserNotFoundException e) {
-            log.error("Error update user: {}", e.getMessage());
+            log.error("Error updating user: {}", e.getMessage());
             return Optional.empty();
         }
     }

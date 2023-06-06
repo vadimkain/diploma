@@ -38,11 +38,15 @@ public class SecurityConfig {
                 .cors().and().csrf().disable()
                 .authorizeHttpRequests()
                 .requestMatchers(
-                        HELLO,
-                        AUTHENTICATE,
-                        REGISTRATION,
-                        REGISTRATION + "/*"
+                        HELLO
                 ).permitAll()
+                .requestMatchers(
+                        AUTHENTICATE,
+                        REGISTRATION
+                ).anonymous()
+                .requestMatchers(
+                        USER
+                ).authenticated()
                 .anyRequest().authenticated()
                 .and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)

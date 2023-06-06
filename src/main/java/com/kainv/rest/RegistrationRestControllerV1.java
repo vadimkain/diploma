@@ -13,6 +13,7 @@ import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,12 +31,14 @@ public class RegistrationRestControllerV1 {
     private final RoleRepository roleRepository;
     private final UserServiceImpl userService;
     private final JwtTokenProvider jwtTokenProvider;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public RegistrationRestControllerV1(RoleRepository roleRepository, UserServiceImpl userService, JwtTokenProvider jwtTokenProvider) {
+    public RegistrationRestControllerV1(RoleRepository roleRepository, UserServiceImpl userService, JwtTokenProvider jwtTokenProvider, PasswordEncoder passwordEncoder) {
         this.roleRepository = roleRepository;
         this.userService = userService;
         this.jwtTokenProvider = jwtTokenProvider;
+        this.passwordEncoder = passwordEncoder;
     }
 
     //    TODO: усовершенствовать
@@ -54,10 +57,12 @@ public class RegistrationRestControllerV1 {
 
     @PostMapping
     public ResponseEntity<EntityModel<AuthenticationResponse>> registration(@RequestBody AddUserDto addUserDto) {
+        String password = addUserDto.getPassword();
+
         Optional<UserDto> userDto = userService.createEntity(addUserDto);
 
         if (userDto.isPresent()) {
-            AuthenticationResponse authenticationResponse = jwtTokenProvider.provideToken(userDto.get().getEmail(), userDto.get().getPassword());
+            AuthenticationResponse authenticationResponse = jwtTokenProvider.provideToken(addUserDto.getEmail(), password);
             return ResponseEntity.ok(
                     EntityModel.of(authenticationResponse).add(
                             linkTo(methodOn(RegistrationRestControllerV1.class).registration(addUserDto)).withSelfRel()
