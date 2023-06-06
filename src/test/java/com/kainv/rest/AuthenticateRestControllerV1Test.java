@@ -3,11 +3,12 @@ package com.kainv.rest;
 import com.kainv.model.dto.AuthenticationRequest;
 import com.kainv.model.dto.AuthenticationResponse;
 import com.kainv.security.jwt.JwtTokenProvider;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,8 @@ import org.springframework.http.ResponseEntity;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
+@SpringBootTest
+@ExtendWith(MockitoExtension.class)
 public class AuthenticateRestControllerV1Test {
 
     @Mock
@@ -22,11 +25,6 @@ public class AuthenticateRestControllerV1Test {
 
     @InjectMocks
     private AuthenticateRestControllerV1 authenticateRestController;
-
-    @BeforeEach
-    public void setup() {
-        MockitoAnnotations.initMocks(this);
-    }
 
     @Test
     public void getToken_ReturnsToken_Successfully() {

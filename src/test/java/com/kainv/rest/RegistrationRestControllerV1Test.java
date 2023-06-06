@@ -7,11 +7,12 @@ import com.kainv.model.entity.personal_cabinet_domain.Role;
 import com.kainv.model.repos.RoleRepository;
 import com.kainv.model.service.personal_cabinet.UserServiceImpl;
 import com.kainv.security.jwt.JwtTokenProvider;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
@@ -25,6 +26,8 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
+@SpringBootTest
+@ExtendWith(MockitoExtension.class)
 public class RegistrationRestControllerV1Test {
 
     @Mock
@@ -41,11 +44,6 @@ public class RegistrationRestControllerV1Test {
 
     @InjectMocks
     private RegistrationRestControllerV1 registrationRestController;
-
-    @BeforeEach
-    public void setup() {
-        MockitoAnnotations.initMocks(this);
-    }
 
     @Test
     public void getRoles_ReturnsRoles_Successfully() {

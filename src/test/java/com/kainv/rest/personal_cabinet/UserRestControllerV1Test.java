@@ -4,11 +4,12 @@ import com.kainv.model.dto.personal_cabinet.UserDto;
 import com.kainv.model.dto.personal_cabinet.UserInfoDto;
 import com.kainv.model.entity.personal_cabinet_domain.Birthday;
 import com.kainv.model.service.personal_cabinet.UserServiceImpl;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +22,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+@SpringBootTest
+@ExtendWith(MockitoExtension.class)
 class UserRestControllerV1Test {
 
     @Mock
@@ -28,11 +31,6 @@ class UserRestControllerV1Test {
 
     @InjectMocks
     private UserRestControllerV1 userRestControllerV1;
-
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
 
     @Test
     void getUser_WithValidPrincipal_ReturnsUserInfoDto() {
